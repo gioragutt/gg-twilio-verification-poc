@@ -30,21 +30,21 @@ exports.sendCode = async (email, phone, countryCode) => {
     // The user's email address is used to register the user to authy.
     // A user can enter several email addresses with the same phone+countryCode
     // the same authyId will be returned for a phone+countryCode combo, regardless of the email specified
+    // -------------------
     const {user: {id}} = await promisify(authy, authy.register_user, email, phone, countryCode)
+    // -------------------
 
     // the api call returns the ID that is used in the verification, as stated above, should be saved in the DB
     // -------------------
     authyId = id
     // -------------------
 
-    // the same ID is now user to send the SMS
+    // the same ID is now used to send the SMS
     // -------------------
-    const {cellphone, message} = await requestSms(authyId)
+    const {cellphone} = await requestSms(authyId)
     // -------------------
 
-    return {
-      message: `SMS was sent to ${cellphone}`
-    }
+    return {message: `SMS was sent to ${cellphone}`}
   } catch (e) {
     console.error('Caught exception', e)
     authyId = null
@@ -62,9 +62,7 @@ exports.verifyCode = async (code) => {
     // -------------------
 
     console.log(verify)
-    return {
-      message: `Successfully verified phone!`
-    }
+    return {message: `Successfully verified phone!`}
   } catch (e) {
     console.log('Failed to verify code', e)
     throw e
