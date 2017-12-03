@@ -6,22 +6,26 @@ See `.env.example` for required environment variables
 
 run server with `npm start`
 
-## example messages
+## Example messages
 
-    curl --request POST \
-      --url http://localhost:3000/api/v1/verifyPhone \
-      --header 'content-type: application/json' \
-      --data '{
-    	"email": "YOUR@EMAIL.COM",
-    	"phone": "Y0UR4H0N3",
-    	"countryCode": "972"
-    }'
+```sh
+curl --request POST \
+  --url http://localhost:3000/api/v1/verifyPhone \
+  --header 'content-type: application/json' \
+  --data '{
+	"email": "YOUR@EMAIL.COM",
+	"phone": "Y0UR4H0N3",
+	"countryCode": "972"
+}'
+```
 
 *wait for sms here*
 
-    curl --request POST \
-      --url http://localhost:3000/api/v1/verifyCode \
-      --header 'content-type: application/json' \
-      --data '{
-    	"code": "CODE FROM SMS HERE!"
-    }'
+```sh
+curl --request POST \
+  --url http://localhost:3000/api/v1/verifyCode \
+  --header 'content-type: application/json' \
+  --data '{
+	"code": "CODE FROM SMS HERE!"
+}'
+```
