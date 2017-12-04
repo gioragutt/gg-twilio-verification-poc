@@ -10,10 +10,9 @@ run server with `npm start`
 
 ```sh
 curl --request POST \
-  --url http://localhost:3000/api/v1/verifyPhone \
+  --url http://localhost:3000/api/v1/sendCode \
   --header 'content-type: application/json' \
   --data '{
-	"email": "YOUR@EMAIL.COM",
 	"phone": "Y0UR4H0N3",
 	"countryCode": "972"
 }'
@@ -26,6 +25,8 @@ curl --request POST \
   --url http://localhost:3000/api/v1/verifyCode \
   --header 'content-type: application/json' \
   --data '{
+	"phone": "Y0UR4H0N3",
+	"countryCode": "972"
 	"code": "CODE FROM SMS HERE!"
 }'
 ```

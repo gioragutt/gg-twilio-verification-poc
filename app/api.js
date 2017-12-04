@@ -1,70 +1,44 @@
 const {AUTHY_AUTH_KEY} = require('./config')
+const {logger} = require('lib/logger')
 
-const authy = require('authy')(AUTHY_AUTH_KEY)
-
-// this should be saved in the DB, as a field in userRegistration
-// see reference: https://www.twilio.com/docs/tutorials/account-verification-node-express#sending-a-verification-token
-// -------------------
-let authyId = null
-// -------------------
+const phoneVerification = require('authy')(AUTHY_AUTH_KEY).phones()
 
 const promisify = (instance, fn, ...args) => new Promise((resolve, reject) => fn.apply(instance, [...args, (err, result) => {
   if (err) {
-    reject(err)
+    reject(err.errors.message || err.message || err)
   }
   resolve(result)
 }]))
 
-const requestSms = async (id) => {
-  try {
-    return await promisify(authy, authy.request_sms, id, true)
-  } catch (e) {
-    console.log('Failed to request an sms')
-    throw e
-  }
+const twilioApi = async (method, ...props) => {
+  const result = await promisify(phoneVerification, method, ...props)
+  logger.info(result)
+  return {message: result.message}
 }
 
-exports.sendCode = async (email, phone, countryCode) => {
-  try {
-    // See reference: https://www.twilio.com/docs/api/authy/rest/users#enabling-new-user
-    // The user's email address is used to register the user to authy.
-    // A user can enter several email addresses with the same phone+countryCode
-    // the same authyId will be returned for a phone+countryCode combo, regardless of the email specified
-    // -------------------
-    const {user: {id}} = await promisify(authy, authy.register_user, email, phone, countryCode)
-    // -------------------
+/**
+ * This behaves as expected - given a valid phone number, an SMS is sent.
+ * If an invalid phone is provided, and error is returned. The error will later indicate the client
+ * Not to continue to the code verification phase
+ */
+exports.sendCode = (phone, countryCode) => twilioApi(phoneVerification.verification_start, phone, countryCode)
 
-    // the api call returns the ID that is used in the verification, as stated above, should be saved in the DB
-    // -------------------
-    authyId = id
-    // -------------------
-
-    // the same ID is now used to send the SMS
-    // -------------------
-    const {cellphone} = await requestSms(authyId)
-    // -------------------
-
-    return {message: `SMS was sent to ${cellphone}`}
-  } catch (e) {
-    console.error('Caught exception', e)
-    authyId = null
-    throw e
-  }
-}
-
-exports.verifyCode = async (code) => {
-  try {
-    console.log(code)
-
-    // authyId should be retreived from the DB here
-    // -------------------
-    const verify = await promisify(authy, authy.verify, authyId, code)
-    // -------------------
-
-    console.log(verify)
-    return {message: `Successfully verified phone!`}
-  } catch (e) {
-    console.log('Failed to verify code', e)
-    throw e
-  }
-}
+/**
+ * Verifying phone:
+ * ----------------
+ * Currently, the API requires you to pass phone+countryCode again, to verify.
+ * A successful result returns a UUID, which can be saved in the database as the ID
+ * of userVerification, alongside his phone number and country code.
+ * The UUID will be passed as a token to the client
+ * Later, during `verifyCode`, the client will send the UUID and the code, and we can fetch phone+countryCode
+ * using the UUID.
+ * sendCode -> save UUID + phone number in DB and return UUID -> verifyCode -> retreive phone number with UUID and verify
+ * 
+ * Handling user error:
+ * --------------------
+ * 
+ * Entering the wrong code does not re-send a verification code.
+ * Consider adding a `resend code` option (which will call `sendCode`),
+ * For cases where an SMS is not sent (due to service error and etc)
+ */
+exports.verifyCode = (phone, countryCode, code) => twilioApi(phoneVerification.verification_check, phone, countryCode, code)
