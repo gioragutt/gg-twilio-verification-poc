@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "nodemon": "nodemon",
     "start": "nodemon -e js . | pino",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
