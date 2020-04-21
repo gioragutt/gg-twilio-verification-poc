@@ -19,6 +19,6 @@
     "lodash": "^4.17.4",
     "pino": "^4.10.2",
     "standard-http-error": "^2.0.1",
-    "nodemon": "^1.12.1"
+    "nodemon": "^2.0.0"
   }
 }
