@@ -15,7 +15,7 @@
     "body-parser": "^1.18.2",
     "dotenv": "^4.0.0",
     "express": "^4.16.2",
-    "express-pino-logger": "^2.0.0",
+    "express-pino-logger": "^5.0.0",
     "lodash": "^4.17.4",
     "pino": "^4.10.2",
     "standard-http-error": "^2.0.1",
